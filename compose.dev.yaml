@@ -1,0 +1,104 @@
+services:
+  goecom-api-dev:
+    build:
+      context: .
+      target: develop
+    image: ${DEV_GOECOM_IMAGE?error}
+    container_name: goecom-api-dev
+    volumes:
+      - type: bind
+        source: .
+        target: /app
+    restart: no
+    networks:
+      - goecom-dev
+    environment:
+      # get from env file or error if not set
+      GOECOM_WEB_API_PORT: ${COMPOSE_API_PORT?error}
+      GOECOM_WEB_DEBUG_PORT: ${COMPOSE_DEBUG_PORT?error}
+
+      GOECOM_POSTGRES_HOST: goecom-postgres-dev
+      GOECOM_POSTGRES_PORT: 5432
+      GOECOM_POSTGRES_NAME: ${COMPOSE_POSTGRES_DATABASE?error}
+      GOECOM_POSTGRES_USER: ${COMPOSE_POSTGRES_USER?error}
+      GOECOM_POSTGRES_PASSWORD: ${COMPOSE_POSTGRES_PASSWORD?error}
+
+      GOECOM_REDIS_HOST: goecom-redis-dev
+      GOECOM_REDIS_PORT: 6379
+      GOECOM_REDIS_DATABASE: ${COMPOSE_REDIS_DATABASE?error}
+      GOECOM_REDIS_PASSWORD: ${COMPOSE_REDIS_PASSWORD?error}
+
+      GOECOM_MINIO_HOST: goecom-minio-dev
+      GOECOM_MINIO_PORT: 9000
+      GOECOM_MINIO_ACCESS: ${COMPOSE_MINIO_ACCESS?error}
+      GOECOM_MINIO_SECRET: ${COMPOSE_MINIO_SECRET?error}
+      GOECOM_MINIO_BUCKET: ${COMPOSE_MINIO_BUCKET?error}
+    ports:
+      - "${COMPOSE_API_PORT?error}:${COMPOSE_API_PORT?error}"
+      - "${COMPOSE_DEBUG_PORT?error}:${COMPOSE_DEBUG_PORT?error}"
+    depends_on:
+      goecom-postgres-dev:
+        condition: service_healthy
+      goecom-redis-dev:
+        condition: service_started
+
+  goecom-postgres-dev:
+    image: postgres:17.2
+    container_name: goecom-postgres-dev
+    restart: no
+    networks:
+      - goecom-dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - type: volume
+        source: goecom-pg-data-dev
+        target: /var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${COMPOSE_POSTGRES_USER?error}
+      POSTGRES_PASSWORD: ${COMPOSE_POSTGRES_PASSWORD?error}
+      POSTGRES_DB: ${COMPOSE_POSTGRES_DATABASE?error}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d ${COMPOSE_POSTGRES_DATABASE?error} -U ${COMPOSE_POSTGRES_USER?error}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  goecom-redis-dev:
+    image: redis:7.4.0
+    container_name: goecom-redis-dev
+    restart: no
+    command: redis-server --loglevel warning --protected-mode no --requirepass ${COMPOSE_REDIS_PASSWORD?error}
+    networks:
+      - goecom-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - type: volume
+        source: goecom-redis-data-dev
+        target: /data
+
+  goecom-minio-dev:
+    image: minio/minio:latest
+    container_name: goecom-minio-dev
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - type: volume
+        source: goecom-minio-data-dev
+        target: /data
+    environment:
+      MINIO_ROOT_USER: "user"
+      MINIO_ROOT_PASSWORD: "password"
+    command: server /data --console-address :9001
+
+volumes:
+  goecom-pg-data-dev:
+  goecom-redis-data-dev:
+  goecom-minio-data-dev:
+
+networks:
+  goecom-dev:
+    driver: "bridge"

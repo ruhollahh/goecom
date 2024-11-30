@@ -1,0 +1,444 @@
+basePath: /
+definitions:
+  adminhandler.DlvLoginReq:
+    properties:
+      password:
+        maxLength: 64
+        minLength: 8
+        type: string
+      phone_number:
+        type: string
+    required:
+    - password
+    - phone_number
+    type: object
+  adminhandler.DlvLoginResp:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  checkhandler.DlvLivenessResp:
+    properties:
+      GOMAXPROCS:
+        type: string
+      build:
+        type: string
+      host:
+        type: string
+      status:
+        type: string
+    type: object
+  checkhandler.DlvReadinessResp:
+    properties:
+      status:
+        type: string
+    type: object
+  expectederr.ErrorDocument:
+    properties:
+      error:
+        type: string
+      fields:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  producthandler.QueryParams:
+    properties:
+      endCreatedAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      page:
+        type: string
+      price:
+        type: string
+      rows:
+        type: string
+      sortDirection:
+        type: string
+      sortField:
+        type: string
+      startCreatedAt:
+        type: string
+    type: object
+  userhandler.DlvLoginReq:
+    properties:
+      password:
+        maxLength: 64
+        minLength: 8
+        type: string
+      phone_number:
+        type: string
+    required:
+    - password
+    - phone_number
+    type: object
+  userhandler.DlvLoginResp:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  userhandler.DlvSignupReq:
+    properties:
+      name:
+        maxLength: 48
+        type: string
+      password:
+        maxLength: 64
+        minLength: 8
+        type: string
+      password_confirm:
+        type: string
+      phone_number:
+        type: string
+    required:
+    - name
+    - password
+    - phone_number
+    type: object
+  userhandler.DlvSignupResp:
+    properties:
+      user_id:
+        type: string
+    type: object
+info:
+  contact:
+    email: ruhollahh01@gmail.com
+    name: API Support
+    url: https://www.goecom.com/support
+  description: an e-commerce web API.
+  termsOfService: https://goecom.com/terms/
+  title: GoEcom API
+  version: "1.0"
+paths:
+  /v1/admins/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Admin login request body
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/adminhandler.DlvLoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/adminhandler.DlvLoginResp'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+                fields:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Admin login by PhoneNumber
+      tags:
+      - Admins
+  /v1/checks/liveness:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/checkhandler.DlvLivenessResp'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Check liveness
+      tags:
+      - Checks
+  /v1/checks/readiness:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/checkhandler.DlvReadinessResp'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+                fields:
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+                fields:
+                  type: object
+              type: object
+      summary: Check readiness
+      tags:
+      - Checks
+  /v1/products:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Filter by id
+        in: query
+        name: id
+        type: string
+      - description: Filter by name
+        in: query
+        name: name
+        type: string
+      - description: Filter by price
+        in: query
+        name: price
+        type: string
+      - description: Filter by start created at
+        in: query
+        name: start_created_at
+        type: string
+      - description: Filter by end created at
+        in: query
+        name: end_created_at
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: string
+      - description: Page size
+        in: query
+        name: rows
+        type: string
+      - description: Sort by field
+        enum:
+        - id
+        - name
+        - price
+        in: query
+        name: sort_field
+        type: string
+      - description: Sort order
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_direction
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/producthandler.QueryParams'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+                fields:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: Get all products
+      tags:
+      - Products
+  /v1/users/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User login request body
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/userhandler.DlvLoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/userhandler.DlvLoginResp'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+                fields:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: User login by PhoneNumber
+      tags:
+      - Users
+  /v1/users/signup:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User Signup request body
+        in: body
+        name: Request
+        required: true
+        schema:
+          $ref: '#/definitions/userhandler.DlvSignupReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/userhandler.DlvSignupResp'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+                fields:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/expectederr.ErrorDocument'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: User signup by PhoneNumber
+      tags:
+      - Users
+securityDefinitions:
+  AuthBearerAdmin:
+    description: Type the word 'Bearer' followed by a space and admin access token
+    in: header
+    name: Authorization
+    type: apiKey
+  AuthBearerCustomer:
+    description: Type the word 'Bearer' followed by a space and user access token
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
