@@ -5,7 +5,7 @@ import (
 )
 
 func (h *Handler) RegisterRoutes(e *echo.Group) {
-	r := e.Group("/customers")
+	r := e.Group("/users")
 
 	r.POST("/signup", h.Signup)
 	r.POST("/login", h.Login)
